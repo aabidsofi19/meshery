@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Box, Typography, styled, Chip, Badge, Tooltip, Collapse } from '@layer5/sistent';
+import { Box, Typography, styled, Chip, Tooltip, Collapse } from '@layer5/sistent';
 import { ComponentIcon } from '@/components/DesignLifeCycle/common';
 import { AddIcon, DeleteIcon, EditIcon, InfoIcon } from '@layer5/sistent'; // Assuming MUI icons are available
 import ExpandLessIcon from '@/assets/icons/ExpandLessIcon';
@@ -89,10 +89,7 @@ const TraceSection = ({ title, items, type, children, emptyMessage = 'No changes
         </SectionTitle>
 
         <Box display={'flex'} alignItems={'center'} gap={2}>
-          <Badge
-            badgeContent={items.length}
-            color={type === 'added' ? 'success' : type === 'deleted' ? 'error' : 'primary'}
-          />
+          <span> ( {items.length} )</span>
 
           {expanded ? (
             <ExpandLessIcon height={24} width={24} fill="white" onClick={toggleExpanded} />
@@ -245,7 +242,6 @@ export const RelationshipEvaluationEventFormatter = ({ event }) => {
     <Box mt={2}>
       <Typography variant="body1">{event.description}</Typography>
       <RelationshipEvaluationTraceFormatter trace={event?.metadata?.trace} />
-      <KeyValue Key={'Evaluated At'} Value={formatDateTime(event?.metadata?.evaluated_at)} />
     </Box>
   );
 };
