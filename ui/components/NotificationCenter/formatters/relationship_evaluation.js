@@ -121,7 +121,7 @@ const ComponentItem = ({ component }) => (
         alignItems={'center'}
       >
         <Typography variant="body2" fontWeight={500}>
-          {component.component.kind} <strong>'{component.displayName}'</strong>
+          {component.component.kind} <strong> &quot;{component.displayName}&quot; </strong>
         </Typography>
         <Tooltip title={`Model: ${component.model.name}  Version: ${component?.model?.version}`}>
           <ModelBadge size="small" label={component.model.name} variant="outlined" />
