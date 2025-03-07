@@ -1,9 +1,11 @@
-import React from 'react';
-import { Box, Typography, styled, Chip, Badge, Tooltip } from '@layer5/sistent';
+import React, { memo, useState } from 'react';
+import { Box, Typography, styled, Chip, Badge, Tooltip, IconButton, Collapse } from '@layer5/sistent';
 import { ComponentIcon } from '@/components/DesignLifeCycle/common';
 import { StyledAccordion } from '@/components/StyledAccordion';
 import { AddIcon, DeleteIcon, EditIcon, InfoIcon } from '@layer5/sistent'; // Assuming MUI icons are available
 import { useTheme } from '@emotion/react';
+import ExpandLessIcon from '@/assets/icons/ExpandLessIcon';
+import ExpandMoreIcon from '@/assets/icons/ExpandMoreIcon';
 
 // Styled components
 const SectionContainer = styled(Box)(({ theme }) => ({
@@ -14,13 +16,14 @@ const SectionContainer = styled(Box)(({ theme }) => ({
   boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
 }));
 
-const SectionHeader = styled(Box)(({ theme }) => ({
+const SectionHeader = styled(Box)(({ theme ,expanded}) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '0 0 12px 0',
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  marginBottom: '12px',
+  padding: expanded ? '0 0 12px 0' : "0px",
+  borderBottom: expanded ? `1px solid ${theme.palette.divider}`:"none",
+  marginBottom: expanded ? '12px' : "0px",
+  cursor:"pointer",
 }));
 
 const SectionTitle = styled(Box)(({ theme }) => ({
@@ -51,7 +54,8 @@ const EmptyState = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   padding: '24px',
-  color: theme.palette.text.secondary,
+  background: theme.palette.background.blur.light,
+  color: theme.palette.text.primary,
   fontStyle: 'italic',
 }));
 
@@ -71,21 +75,34 @@ const SectionIcon = ({ type }) => {
 };
 
 const TraceSection = ({ title, items, type, children, emptyMessage = 'No changes' }) => {
+
+  const [expanded , setExpanded] = useState(false)
+  const toggleExpanded = () => {
+    setExpanded(prev => !prev)
+  }
   if (!items || items.length === 0) return null;
+
 
   return (
     <SectionContainer>
-      <SectionHeader>
+      <SectionHeader onClick={toggleExpanded} expanded={expanded} >
         <SectionTitle>
           <SectionIcon type={type} />
           <Typography variant="subtitle1">{title}</Typography>
         </SectionTitle>
-        <Badge
-          badgeContent={items.length}
-          color={type === 'added' ? 'success' : type === 'deleted' ? 'error' : 'primary'}
-        />
+
+        <Box display={"flex"} alignItems={"center"} gap={2}>  
+          <Badge
+            badgeContent={items.length}
+            color={type === 'added' ? 'success' : type === 'deleted' ? 'error' : 'primary'}
+          />
+
+          {expanded ? <ExpandLessIcon height={24} width={24} fill="white"  onClick={toggleExpanded}  /> : <ExpandMoreIcon  onClick={toggleExpanded}  height={24} width={24} fill="white" /> }
+        </Box>
       </SectionHeader>
-      {items.length > 0 ? children : <EmptyState>{emptyMessage}</EmptyState>}
+      <Collapse in={expanded}>
+        {items.length > 0 ? children : <EmptyState>{emptyMessage}</EmptyState>}
+      </Collapse>
     </SectionContainer>
   );
 };
@@ -162,7 +179,7 @@ export const RelationshipsTrace = ({ relationships, title, type }) => (
 );
 
 // Main Formatter Component
-export const RelationshipEvaluationTraceFormatter = ({ value: trace }) => {
+export const RelationshipEvaluationTraceFormatter = memo(({ value: trace }) => {
   const hasChanges =
     trace.componentsAdded.length > 0 ||
     trace.componentsRemoved.length > 0 ||
@@ -172,14 +189,14 @@ export const RelationshipEvaluationTraceFormatter = ({ value: trace }) => {
     trace.relationshipsRemoved.length > 0;
 
   return (
-    <Box>
+    <Box mt={2}>
       {!hasChanges ? (
         <EmptyState>
-          <InfoIcon sx={{ mr: 1 }} />
-          <Typography>No changes detected in this evaluation</Typography>
+          <InfoIcon  />
+          <Typography ml={1}>No changes detected in this evaluation</Typography>
         </EmptyState>
       ) : (
-        <Box flexDirection="column" gap={2} display="flex">
+        <Box flexDirection="column" gap={1} display="flex">
           <ComponentsTrace
             title="Components Added"
             components={trace.componentsAdded}
@@ -214,4 +231,4 @@ export const RelationshipEvaluationTraceFormatter = ({ value: trace }) => {
       )}
     </Box>
   );
-};
+});
