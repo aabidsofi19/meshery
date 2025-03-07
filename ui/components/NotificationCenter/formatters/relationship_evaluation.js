@@ -122,7 +122,7 @@ const ComponentItem = ({ component }) => (
         <Typography variant="body2" fontWeight={500}>
           {component.component.kind} <strong>'{component.displayName}'</strong>
         </Typography>
-        <Tooltip title={`Model: ${component.model.name}`}>
+        <Tooltip title={`Model: ${component.model.name}  Version: ${component?.model?.version}`}>
           <ModelBadge size="small" label={component.model.name} variant="outlined" />
         </Tooltip>
       </Box>
@@ -151,7 +151,7 @@ const RelationshipItem = ({ relationship, action }) => (
             <strong>{selector?.allow?.to?.[0]?.kind || 'Unknown'}</strong>
           </Typography>
 
-         <Tooltip title={`Model: ${relationship.model.name}`}>
+         <Tooltip title={`Model: ${relationship.model.name} Version: ${relationship?.model?.version}`}>
            <ModelBadge size="small" label={relationship.model.name} variant="outlined" />
          </Tooltip>
         </Box>
