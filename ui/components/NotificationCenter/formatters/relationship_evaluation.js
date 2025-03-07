@@ -1,11 +1,10 @@
 import React, { memo, useState } from 'react';
-import { Box, Typography, styled, Chip, Badge, Tooltip, IconButton, Collapse } from '@layer5/sistent';
+import { Box, Typography, styled, Chip, Badge, Tooltip, Collapse } from '@layer5/sistent';
 import { ComponentIcon } from '@/components/DesignLifeCycle/common';
-import { StyledAccordion } from '@/components/StyledAccordion';
 import { AddIcon, DeleteIcon, EditIcon, InfoIcon } from '@layer5/sistent'; // Assuming MUI icons are available
-import { useTheme } from '@emotion/react';
 import ExpandLessIcon from '@/assets/icons/ExpandLessIcon';
 import ExpandMoreIcon from '@/assets/icons/ExpandMoreIcon';
+import { formatDateTime, KeyValue } from '@/components/DataFormatter';
 
 // Styled components
 const SectionContainer = styled(Box)(({ theme }) => ({
@@ -16,17 +15,17 @@ const SectionContainer = styled(Box)(({ theme }) => ({
   boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
 }));
 
-const SectionHeader = styled(Box)(({ theme ,expanded}) => ({
+const SectionHeader = styled(Box)(({ theme, expanded }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: expanded ? '0 0 12px 0' : "0px",
-  borderBottom: expanded ? `1px solid ${theme.palette.divider}`:"none",
-  marginBottom: expanded ? '12px' : "0px",
-  cursor:"pointer",
+  padding: expanded ? '0 0 12px 0' : '0px',
+  borderBottom: expanded ? `1px solid ${theme.palette.divider}` : 'none',
+  marginBottom: expanded ? '12px' : '0px',
+  cursor: 'pointer',
 }));
 
-const SectionTitle = styled(Box)(({ theme }) => ({
+const SectionTitle = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
@@ -44,7 +43,7 @@ const ItemRow = styled(Box)(({ theme }) => ({
   },
 }));
 
-const ModelBadge = styled(Chip)(({ theme }) => ({
+const ModelBadge = styled(Chip)(() => ({
   fontSize: '12px',
   height: '24px',
 }));
@@ -75,29 +74,31 @@ const SectionIcon = ({ type }) => {
 };
 
 const TraceSection = ({ title, items, type, children, emptyMessage = 'No changes' }) => {
-
-  const [expanded , setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(false);
   const toggleExpanded = () => {
-    setExpanded(prev => !prev)
-  }
+    setExpanded((prev) => !prev);
+  };
   if (!items || items.length === 0) return null;
-
 
   return (
     <SectionContainer>
-      <SectionHeader onClick={toggleExpanded} expanded={expanded} >
+      <SectionHeader onClick={toggleExpanded} expanded={expanded}>
         <SectionTitle>
           <SectionIcon type={type} />
           <Typography variant="subtitle1">{title}</Typography>
         </SectionTitle>
 
-        <Box display={"flex"} alignItems={"center"} gap={2}>  
+        <Box display={'flex'} alignItems={'center'} gap={2}>
           <Badge
             badgeContent={items.length}
             color={type === 'added' ? 'success' : type === 'deleted' ? 'error' : 'primary'}
           />
 
-          {expanded ? <ExpandLessIcon height={24} width={24} fill="white"  onClick={toggleExpanded}  /> : <ExpandMoreIcon  onClick={toggleExpanded}  height={24} width={24} fill="white" /> }
+          {expanded ? (
+            <ExpandLessIcon height={24} width={24} fill="white" onClick={toggleExpanded} />
+          ) : (
+            <ExpandMoreIcon onClick={toggleExpanded} height={24} width={24} fill="white" />
+          )}
         </Box>
       </SectionHeader>
       <Collapse in={expanded}>
@@ -131,17 +132,17 @@ const ComponentItem = ({ component }) => (
 );
 
 // Relationship Trace Item
-const RelationshipItem = ({ relationship, action }) => (
+const RelationshipItem = ({ relationship }) => (
   <>
     {relationship.selectors.map((selector, index) => (
       <ItemRow key={index}>
-        <Box flex={1}
-
-        display={'flex'}
-        justifyItems={'space-between'}
-        justifyContent={'space-between'}
-        width={'100%'}
-        alignItems={'center'}
+        <Box
+          flex={1}
+          display={'flex'}
+          justifyItems={'space-between'}
+          justifyContent={'space-between'}
+          width={'100%'}
+          alignItems={'center'}
         >
           <Typography variant="body2">
             <span style={{ fontWeight: 500 }}>
@@ -151,9 +152,11 @@ const RelationshipItem = ({ relationship, action }) => (
             <strong>{selector?.allow?.to?.[0]?.kind || 'Unknown'}</strong>
           </Typography>
 
-         <Tooltip title={`Model: ${relationship.model.name} Version: ${relationship?.model?.version}`}>
-           <ModelBadge size="small" label={relationship.model.name} variant="outlined" />
-         </Tooltip>
+          <Tooltip
+            title={`Model: ${relationship.model.name} Version: ${relationship?.model?.version}`}
+          >
+            <ModelBadge size="small" label={relationship.model.name} variant="outlined" />
+          </Tooltip>
         </Box>
       </ItemRow>
     ))}
@@ -179,7 +182,11 @@ export const RelationshipsTrace = ({ relationships, title, type }) => (
 );
 
 // Main Formatter Component
-export const RelationshipEvaluationTraceFormatter = memo(({ value: trace }) => {
+export const RelationshipEvaluationTraceFormatter = memo(function RelationshipTraceFormatter({
+  trace,
+}) {
+  if (!trace) return null;
+
   const hasChanges =
     trace.componentsAdded.length > 0 ||
     trace.componentsRemoved.length > 0 ||
@@ -192,11 +199,11 @@ export const RelationshipEvaluationTraceFormatter = memo(({ value: trace }) => {
     <Box mt={2}>
       {!hasChanges ? (
         <EmptyState>
-          <InfoIcon  />
+          <InfoIcon />
           <Typography ml={1}>No changes detected in this evaluation</Typography>
         </EmptyState>
       ) : (
-        <Box flexDirection="column" gap={1} display="flex">
+        <Box flexDirection="column" display="flex">
           <ComponentsTrace
             title="Components Added"
             components={trace.componentsAdded}
@@ -209,7 +216,7 @@ export const RelationshipEvaluationTraceFormatter = memo(({ value: trace }) => {
           />
           <ComponentsTrace
             title="Components Removed"
-            components={trace.componentsAdded}
+            components={trace.componentsRemoved}
             type="deleted"
           />
           <RelationshipsTrace
@@ -220,7 +227,7 @@ export const RelationshipEvaluationTraceFormatter = memo(({ value: trace }) => {
           <RelationshipsTrace
             title="Relationships Updated"
             type="updated"
-            relationships={trace.relationshipsAdded}
+            relationships={trace.relationshipsUpdated}
           />
           <RelationshipsTrace
             title="Relationships Removed"
@@ -232,3 +239,13 @@ export const RelationshipEvaluationTraceFormatter = memo(({ value: trace }) => {
     </Box>
   );
 });
+
+export const RelationshipEvaluationEventFormatter = ({ event }) => {
+  return (
+    <Box mt={2}>
+      <Typography variant="body1">{event.description}</Typography>
+      <RelationshipEvaluationTraceFormatter trace={event?.metadata?.trace} />
+      <KeyValue Key={'Evaluated At'} Value={formatDateTime(event?.metadata?.evaluated_at)} />
+    </Box>
+  );
+};
